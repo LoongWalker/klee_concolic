@@ -750,7 +750,6 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
   std::map< ExecutionState*, std::vector<SeedInfo> >::iterator it = 
     seedMap.find(&current);
   bool isSeeding = it != seedMap.end();
-  printf("isSeeding: %d, isConstantExpr: %d\n", isSeeding, isa<ConstantExpr>(condition));
   if (!isSeeding && !isa<ConstantExpr>(condition) && 
       (MaxStaticForkPct!=1. || MaxStaticSolvePct != 1. ||
        MaxStaticCPForkPct!=1. || MaxStaticCPSolvePct != 1.) &&
@@ -962,8 +961,8 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
     // ADDED
     
     //string_stream << "Instruction: " << *ins << "\tcondition: " << condition<< "\n";
-    *(trueState->strPathOS) << "1 " << "Instruction: " << *ins << "\tcondition: " << condition << "\n";
-    *(falseState->strPathOS) << "0 " << "Instruction: " << *ins << "\tcondition: " << condition << "\n";
+    if(trueState->strPathOS) *(trueState->strPathOS) << "1 " << "Instruction: " << *ins << "\tcondition: " << condition << "\n";
+    if(falseState->strPathOS) *(falseState->strPathOS) << "0 " << "Instruction: " << *ins << "\tcondition: " << condition << "\n";
     if (pathWriter) {
       // Need to update the pathOS.id field of falseState, otherwise the same id
       // is used for both falseState and trueState.

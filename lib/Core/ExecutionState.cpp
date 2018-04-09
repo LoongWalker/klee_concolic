@@ -75,10 +75,13 @@ ExecutionState::ExecutionState(KFunction *kf) :
     forkDisabled(false),
     ptreeNode(0) {
   pushFrame(0, kf);
+  strPathOS = new llvm::raw_string_ostream(pathStr);
 }
 
 ExecutionState::ExecutionState(const std::vector<ref<Expr> > &assumptions)
-    : constraints(assumptions), queryCost(0.), ptreeNode(0) {}
+    : constraints(assumptions), queryCost(0.), ptreeNode(0), strPathOS(0) {
+  strPathOS = new llvm::raw_string_ostream(pathStr);
+}
 
 ExecutionState::~ExecutionState() {
   for (unsigned int i=0; i<symbolics.size(); i++)
@@ -91,7 +94,7 @@ ExecutionState::~ExecutionState() {
   }
 
   while (!stack.empty()) popFrame();
-  delete strPathOS;
+  if (strPathOS) delete strPathOS;
 }
 
 ExecutionState::ExecutionState(const ExecutionState& state):
@@ -121,6 +124,11 @@ ExecutionState::ExecutionState(const ExecutionState& state):
 {
   for (unsigned int i=0; i<symbolics.size(); i++)
     symbolics[i].first->refCount++;
+  //std::string str;
+  //strPathOS = new llvm::raw_string_ostream(str);
+  //*strPathOS << state.strPathOS->str();
+  strPathOS = new llvm::raw_string_ostream(pathStr);
+  *strPathOS << state.strPathOS->str();
 }
 
 ExecutionState *ExecutionState::branch() {

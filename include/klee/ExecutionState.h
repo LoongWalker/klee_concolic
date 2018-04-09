@@ -118,8 +118,8 @@ public:
   TreeOStream symPathOS;
 
   //DEV
-  std::string str;
-  llvm::raw_string_ostream *strPathOS = new llvm::raw_string_ostream(str);
+  std::string pathStr;
+  llvm::raw_string_ostream *strPathOS;
 
   /// @brief Counts how many instructions were executed since the last new
   /// instruction was covered.
