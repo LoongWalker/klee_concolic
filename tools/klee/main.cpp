@@ -439,6 +439,7 @@ void KleeHandler::processTestCase(const ExecutionState &state,
       std::ofstream ofs;
       ofs.open(getOutputFilename(getTestFilename("trace", id)).c_str());
       ofs << state.strPathOS->str();
+      ofs.close();
       if (!kTest_toFile(&b, getOutputFilename(getTestFilename("ktest", id)).c_str())) {
         klee_warning("unable to write output test case, losing it");
       } else {

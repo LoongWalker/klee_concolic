@@ -794,10 +794,19 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
       assert(replayPosition<replayPath->size() &&
              "ran out of branches in replay path mode");
       bool branch = (*replayPath)[replayPosition++];
-      
       if (res==Solver::True) {
+        if (!branch) {
+          std::ofstream ofs("failed_path_condition");
+          ofs << current.strPathOS->str();
+          ofs.close();
+        }
         assert(branch && "hit invalid branch in replay path mode");
       } else if (res==Solver::False) {
+        if (branch) {
+          std::ofstream ofs("failed_path_condition");
+          ofs << current.strPathOS->str();
+          ofs.close();
+        }
         assert(!branch && "hit invalid branch in replay path mode");
       } else {
         // add constraints
@@ -882,6 +891,8 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
   std::string str;
   llvm::raw_string_ostream string_stream(str);
   getLastNonKleeInternalInstruction(current,&ins);
+  const KInstruction *target = current.pc;
+  const InstructionInfo &ii = *target->info;
  
   
   if (res==Solver::True) {
@@ -891,8 +902,8 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
         //string_stream << "1 " << *ins << "\t" << condition<< "\n";
         //std::ofstream outfile;
         //outfile.open("path.condition", std::ios_base::app);
-        if (current.strPathOS) *(current.strPathOS) << "1 " << *ins << "\t" << condition << "\n";
       }
+      if (current.strPathOS) *(current.strPathOS) << "1\tat " << ii.file << ":" << ii.line << "\t" << *ins << "\t" << condition << "\n";
     }
 
     return StatePair(&current, 0);
@@ -903,8 +914,8 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
         string_stream << "0 " << *ins << "\t" << condition<< "\n";
         //std::ofstream outfile;
         //outfile.open("path.condition", std::ios_base::app);
-        if (current.strPathOS) *(current.strPathOS) << "0 " << *ins << "\t" << condition << "\n";
       }
+      if (current.strPathOS) *(current.strPathOS) << "0\tat " << ii.file << ":" << ii.line << "\t" << *ins << "\t" << condition << "\n";
     }
 
     return StatePair(0, &current);
@@ -961,8 +972,8 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
     // ADDED
     
     //string_stream << "Instruction: " << *ins << "\tcondition: " << condition<< "\n";
-    if(trueState->strPathOS) *(trueState->strPathOS) << "1 " << "Instruction: " << *ins << "\tcondition: " << condition << "\n";
-    if(falseState->strPathOS) *(falseState->strPathOS) << "0 " << "Instruction: " << *ins << "\tcondition: " << condition << "\n";
+    if(trueState->strPathOS) *(trueState->strPathOS) << "1\tat " << ii.file << ":" << ii.line << "\t" << *ins << "\tcondition: " << condition << "\n";
+    if(falseState->strPathOS) *(falseState->strPathOS) << "0\tiat " << ii.file << ":" << ii.line << "\t" << *ins << "\tcondition: " << condition << "\n";
     if (pathWriter) {
       // Need to update the pathOS.id field of falseState, otherwise the same id
       // is used for both falseState and trueState.
